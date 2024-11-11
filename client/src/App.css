@@ -1,4 +1,5 @@
 .App {
+  --main-color: #e8a236;
   height: 100vh;
   width: 100vw;
   display: flex;
@@ -7,37 +8,81 @@
   align-items: center;
 
   & h1 {
-    font-size: 2rem;
+    font-size: 2.2rem;
     margin: 0;
+    color: var(--main-color);
   }
 
   & input {
-    width: 20rem;
-    height: 3rem;
+    width: 25rem;
+    height: 3.5rem;
     padding: 0.5rem;
     font-size: 1.2rem;
     outline: none;
+    border-radius: 0.5rem;
+    border: 1px solid #b9802a;
+    background-color: #262626;
+    color: var(--main-color);
+
+    &::placeholder {
+      color: var(--main-color);
+    }
   }
 
   & .form {
-    width: 20rem;
+    width: 25rem;
     height: 5rem;
     margin: 1rem 0;
     display: flex;
     align-items: center;
 
     & input {
-      width: 15rem;
+      width: 17rem;
+      border-radius: 0.5rem 0 0 0.5rem;
+      border-right: none;
+
+      &:focus {
+        border-color: var(--main-color);
+        box-shadow: 0 0 0.1rem 0.05rem #b9802a;
+      }
     }
 
     & button {
-      width: 5rem;
-      height: 3rem;
+      width: 8rem;
+      height: 3.5rem;
       font-size: 1.2rem;
+      background-color: var(--main-color);
+      color: var(--main-background-color);
+      border: none;
+      border-radius: 0 0.5rem 0.5rem 0;
+      transition: all 0.2s ease;
 
-      &:hover {
+      &:hover:enabled {
         cursor: pointer;
+        background-color: #b9802a;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: default;
       }
     }
+  }
+
+  & .result {
+    position: relative;
+    width: 25rem;
+
+    & input {
+      width: calc(100% - 8rem);
+      border-radius: 0.5rem 0 0 0.5rem;
+      border-right: none;
+    }
+  }
+
+  & .copy {
+    position: absolute;
+    top: 0;
+    right: 0;
   }
 }

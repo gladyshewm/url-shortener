@@ -1,0 +1,44 @@
+.copy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 3.5rem;
+  width: 8rem;
+  font-size: 1.2rem;
+  background-color: var(--main-color);
+  color: var(--main-background-color);
+  border: none;
+  border-radius: 0 0.5rem 0.5rem 0;
+  transition: all 0.2s ease;
+
+  &:hover:enabled {
+    cursor: pointer;
+    background-color: #b9802a;
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+
+  & svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-right: 0.5rem;
+    stroke: var(--main-background-color);
+    transition: all 0.2s ease;
+  }
+
+  &.copied {
+    &:hover {
+      & svg {
+        stroke: #b9802a;
+      }
+    }
+
+    & svg {
+      fill: #000;
+      stroke: var(--main-color);
+    }
+  }
+}
