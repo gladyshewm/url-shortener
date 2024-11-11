@@ -5,9 +5,9 @@ export class Link {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  url: string;
+  @Column({ unique: true })
+  code: string;
 
   @Column()
-  description: string;
+  originalUrl: string;
 }
