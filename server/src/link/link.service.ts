@@ -21,13 +21,17 @@ export class LinkService {
 
   async createLink(originalUrl: string): Promise<ShortenedLinkDto> {
     try {
+      const formattedUrl =
+        originalUrl.startsWith('http://') || originalUrl.startsWith('https://')
+          ? originalUrl
+          : `https://${originalUrl}`;
       const code = uuidv4().slice(0, 6);
       const link = new Link();
       link.code = code;
-      link.originalUrl = originalUrl;
+      link.originalUrl = formattedUrl;
       await this.linkRepository.save(link);
       const domain = this.configService.get<string>('DOMAIN');
-      return { url: `${domain}/${code}`, originalUrl };
+      return { url: `${domain}/s/${code}`, originalUrl };
     } catch (error) {
       this.logger.error(error);
       throw new Error('An error occurred while creating the link');
