@@ -1,4 +1,11 @@
+import { useState } from 'react';
 import './App.css';
+
+type LinkDto = {
+  id: number;
+  code: string;
+  originalUrl: string;
+};
 
 const App = () => {
   return (
