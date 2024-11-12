@@ -7,7 +7,9 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
-    "target": "ES2021",
+    "target": "ES5",
+    "lib": ["es2015", "dom"],
+    "esModuleInterop": true,
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./src",
@@ -19,7 +21,8 @@
     // "noImplicitAny": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
-    "types": ["node", "jest"]
+    "types": ["node", "jest"],
+    "typeRoots": ["types", "node_modules/@types"]
   },
   "include": ["src", "test/*.ts"],
   "exclude": ["node_modules", "dist"]

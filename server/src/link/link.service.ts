@@ -1,10 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Link } from './entities/link.entity';
 import { Repository } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
+import { customAlphabet } from 'nanoid';
 import { ShortenedLinkDto } from './dto/shortened-link.dto';
 import { ConfigService } from '@nestjs/config';
+import { LinkStats } from './entities/link-stats.entity';
 
 @Injectable()
 export class LinkService {
@@ -12,6 +13,8 @@ export class LinkService {
 
   constructor(
     @InjectRepository(Link) private linkRepository: Repository<Link>,
+    @InjectRepository(LinkStats)
+    private linkStatsRepository: Repository<LinkStats>,
     private configService: ConfigService,
   ) {}
 
@@ -25,12 +28,18 @@ export class LinkService {
         originalUrl.startsWith('http://') || originalUrl.startsWith('https://')
           ? originalUrl
           : `https://${originalUrl}`;
-      const code = uuidv4().slice(0, 6);
+      const nanoid = customAlphabet(
+        '_-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
+        6,
+      ); // ~2 days of work are needed in order to have a 1% probability of at least one collision (1000 IDs per hour)
+      const code = nanoid();
       const link = new Link();
       link.code = code;
       link.originalUrl = formattedUrl;
+
       await this.linkRepository.save(link);
       const domain = this.configService.get<string>('DOMAIN');
+
       return { url: `${domain}/s/${code}`, originalUrl };
     } catch (error) {
       this.logger.error(error);
@@ -50,13 +59,47 @@ export class LinkService {
   async getOriginalUrl(code: string): Promise<string> {
     try {
       const link = await this.linkRepository.findOneBy({ code });
-      if (!link) {
-        throw new Error('Link not found');
-      }
+      if (!link) throw new NotFoundException('Link not found');
+
       return link.originalUrl;
     } catch (error) {
       this.logger.error(error);
       throw new Error('An error occurred while getting the original URL');
+    }
+  }
+
+  async saveStats(code: string, ip: string, userAgent: string): Promise<void> {
+    try {
+      const link = await this.linkRepository.findOneBy({ code });
+
+      if (!link) throw new NotFoundException('Link not found');
+
+      const stats = this.linkStatsRepository.create({
+        link,
+        accessedAt: new Date(),
+        ipAddress: ip,
+        userAgent,
+      });
+
+      await this.linkStatsRepository.save(stats);
+    } catch (error) {
+      this.logger.error(error);
+      throw new Error('An error occurred while saving stats');
+    }
+  }
+
+  async getStats(code: string): Promise<LinkStats[]> {
+    try {
+      const link = await this.linkRepository.findOne({
+        where: { code },
+        relations: ['stats'],
+      });
+      if (!link) throw new NotFoundException('Link not found');
+
+      return link.stats;
+    } catch (error) {
+      this.logger.error(error);
+      throw new Error('An error occurred while getting stats');
     }
   }
 }

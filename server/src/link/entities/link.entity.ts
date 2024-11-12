@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { LinkStats } from './link-stats.entity';
 
 @Entity()
 export class Link {
@@ -10,4 +11,7 @@ export class Link {
 
   @Column()
   originalUrl: string;
+
+  @OneToMany(() => LinkStats, (stats) => stats.link, { cascade: true })
+  stats: LinkStats[];
 }

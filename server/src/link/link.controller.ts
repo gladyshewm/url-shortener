@@ -5,13 +5,15 @@ import {
   Get,
   Param,
   Post,
+  Req,
   Res,
 } from '@nestjs/common';
 import { LinkService } from './link.service';
 import { Link } from './entities/link.entity';
 import { ShortenedLinkDto } from './dto/shortened-link.dto';
 import { CreateLinkDto } from './dto/create-link.dto';
-import { Response } from 'express';
+import { Request, Response } from 'express';
+import { LinkStats } from './entities/link-stats.entity';
 
 @Controller()
 export class LinkController {
@@ -35,8 +37,22 @@ export class LinkController {
   }
 
   @Get('s/:code')
-  async redirect(@Param('code') code: string, @Res() res: Response) {
+  async redirect(
+    @Param('code') code: string,
+    @Res() res: Response,
+    @Req() req: Request,
+  ) {
     const url = await this.linkService.getOriginalUrl(code);
+    await this.linkService.saveStats(
+      code,
+      req.ip as string,
+      req.headers['user-agent'] as string,
+    );
     return res.redirect(url);
+  }
+
+  @Get('api/stats/:code')
+  async getStats(@Param('code') code: string): Promise<LinkStats[]> {
+    return this.linkService.getStats(code);
   }
 }
