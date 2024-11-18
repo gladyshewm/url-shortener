@@ -15,6 +15,9 @@ export class LinkStats {
   @Column()
   ipAddress: string;
 
-  @ManyToOne(() => Link, (link) => link.stats)
+  @ManyToOne(() => Link, (link) => link.stats, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
   link: Link;
 }

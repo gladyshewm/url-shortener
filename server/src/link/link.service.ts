@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Link } from './entities/link.entity';
 import { Repository } from 'typeorm';
@@ -6,6 +6,8 @@ import { customAlphabet } from 'nanoid';
 import { ShortenedLinkDto } from './dto/shortened-link.dto';
 import { ConfigService } from '@nestjs/config';
 import { LinkStats } from './entities/link-stats.entity';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class LinkService {
@@ -15,6 +17,8 @@ export class LinkService {
     @InjectRepository(Link) private linkRepository: Repository<Link>,
     @InjectRepository(LinkStats)
     private linkStatsRepository: Repository<LinkStats>,
+    @Inject(CACHE_MANAGER)
+    private cacheManager: Cache,
     private configService: ConfigService,
   ) {}
 
@@ -50,6 +54,7 @@ export class LinkService {
   async deleteLink(code: string): Promise<void> {
     try {
       await this.linkRepository.delete({ code });
+      await this.cacheManager.del(code);
     } catch (error) {
       this.logger.error(error);
       throw new Error('An error occurred while deleting the link');
@@ -58,8 +63,13 @@ export class LinkService {
 
   async getOriginalUrl(code: string): Promise<string> {
     try {
+      const cachedLink = await this.cacheManager.get<string>(code);
+      if (cachedLink) return cachedLink;
+
       const link = await this.linkRepository.findOneBy({ code });
       if (!link) throw new NotFoundException('Link not found');
+
+      await this.cacheManager.set(code, link.originalUrl, 1000 * 60 * 60); // 1 hour
 
       return link.originalUrl;
     } catch (error) {
