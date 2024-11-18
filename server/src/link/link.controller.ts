@@ -9,18 +9,18 @@ import {
   Res,
 } from '@nestjs/common';
 import { LinkService } from './link.service';
-import { Link } from './entities/link.entity';
 import { ShortenedLinkDto } from './dto/shortened-link.dto';
 import { CreateLinkDto } from './dto/create-link.dto';
 import { Request, Response } from 'express';
-import { LinkStats } from './entities/link-stats.entity';
+import { LinkStatsDto } from './dto/link-stats.dto';
+import { LinkDto } from './dto/link.dto';
 
 @Controller()
 export class LinkController {
   constructor(private readonly linkService: LinkService) {}
 
   @Get('api/all')
-  async getAll(): Promise<Link[]> {
+  async getAll(): Promise<LinkDto[]> {
     return this.linkService.findAll();
   }
 
@@ -52,7 +52,7 @@ export class LinkController {
   }
 
   @Get('api/stats/:code')
-  async getStats(@Param('code') code: string): Promise<LinkStats[]> {
+  async getStats(@Param('code') code: string): Promise<LinkStatsDto[]> {
     return this.linkService.getStats(code);
   }
 }

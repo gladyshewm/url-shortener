@@ -8,6 +8,8 @@ import { ConfigService } from '@nestjs/config';
 import { LinkStats } from './entities/link-stats.entity';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import { LinkStatsDto } from './dto/link-stats.dto';
+import { LinkDto } from './dto/link.dto';
 
 @Injectable()
 export class LinkService {
@@ -22,8 +24,13 @@ export class LinkService {
     private configService: ConfigService,
   ) {}
 
-  async findAll(): Promise<Link[]> {
-    return this.linkRepository.find();
+  async findAll(): Promise<LinkDto[]> {
+    try {
+      return this.linkRepository.find();
+    } catch (error) {
+      this.logger.error(error);
+      throw new Error('An error occurred while getting all links');
+    }
   }
 
   async createLink(originalUrl: string): Promise<ShortenedLinkDto> {
@@ -98,7 +105,7 @@ export class LinkService {
     }
   }
 
-  async getStats(code: string): Promise<LinkStats[]> {
+  async getStats(code: string): Promise<LinkStatsDto[]> {
     try {
       const link = await this.linkRepository.findOne({
         where: { code },
